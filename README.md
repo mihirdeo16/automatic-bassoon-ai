@@ -13,4 +13,4 @@ To get started follow these steps:
 4. Run the agent using `adk tiny-ai-agent`.
 
 ### 💡 Some Ideas for to build agents 🤖
-+ Create agent which given sentence convert into business-corporate lingo.
++ Create agent which for given sentence convert it into business-corporate lingo.
