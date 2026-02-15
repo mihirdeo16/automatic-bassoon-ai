@@ -1,0 +1,24 @@
+data:
+  input_file: data/data.csv
+  output_dir: output
+columns:
+  date: Activity Date
+  description: Description
+  amount: Amount
+  transaction_type: Trans Code
+  price: Price
+  quantity: Quantity
+  instrument: Instrument
+  settle_date: Settle Date
+processing:
+  clean_currency_cols:
+  - Amount
+  - Price
+transaction_codes:
+  ACH: Account Opening
+  Buy: Buyng share of company
+  CDIV: Cash Dividen
+  REC: 
+  RTP: Amount Transfered
+  SLIP: Stock Lending
+  SPL: 
