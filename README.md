@@ -14,3 +14,5 @@ To get started follow these steps:
 
 ### 💡 Some Ideas for to build agents 🤖
 + Create agent which for given sentence convert it into business-corporate lingo.
++ Chatbot which fill form for you.
++ Finance planner for month investment, give detail report/news on your portfolio, which just give what next month investment look like.
