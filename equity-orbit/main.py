@@ -2,7 +2,7 @@ import os
 import sys
 import argparse
 import pandas as pd
-from src.utils import load_config, save_run_dataframes
+from src.utils import load_config, save_run_dataframes, load_and_combine_csvs
 from src.data_processing import process_data
 from src.report import generate_report
 from src.logger import setup_run_logging
@@ -13,10 +13,6 @@ def main(data_file, config_path, current_value, logger, run_dir):
 
     # Define paths relative to the script if needed
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    output_dir = os.path.join(base_dir, "output")
-    
-    # Ensure output directory exists (for Markdown reports)
-    os.makedirs(output_dir, exist_ok=True)
     
     logger.info(f"Using config: {config_path}")
     logger.info(f"Using data: {data_file}")
@@ -28,13 +24,8 @@ def main(data_file, config_path, current_value, logger, run_dir):
     if config is None:
         logger.error("Failed to load configuration.")
         
-    # Read CSV data
-    if not os.path.exists(data_file):
-        logger.error(f"Data file not found: {data_file}")
-        sys.exit(1)
-        
-    df = pd.read_csv(data_file, on_bad_lines='skip')
-    logger.info(f"Loaded {len(df)} rows from data file.")
+    # Read CSV data from the data folder using util function
+    df = load_and_combine_csvs(data_file, config, logger)
 
     # Process Data
     logger.info("Processing data...")
@@ -48,7 +39,7 @@ def main(data_file, config_path, current_value, logger, run_dir):
     # Generate Report (Markdown)
     logger.info("Generating report...")
     run_id = os.path.basename(run_dir)
-    report_path = generate_report(data_summary, output_dir, run_id=run_id)
+    report_path = generate_report(data_summary, run_dir, run_id=run_id)
     
     logger.info(f"Report generated: {report_path}")
     logger.info("Analysis run completed successfully.")
@@ -81,8 +72,9 @@ if __name__ == "__main__":
     data_path = resolve_path(args.data)
     config_path = resolve_path(args.config)
     
-    if not os.path.exists(data_path):
-        logger.error(f"Data file not found: {data_path}")
+    data_dir_path = data_path if os.path.isdir(data_path) else os.path.dirname(data_path)
+    if not os.path.exists(data_dir_path):
+        logger.error(f"Data directory not found for: {data_path}")
         sys.exit(1)
         
     main(data_path, config_path, args.current_value, logger, run_dir)

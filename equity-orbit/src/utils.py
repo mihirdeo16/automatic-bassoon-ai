@@ -97,3 +97,43 @@ def save_run_dataframes(data_summary: Dict[str, Any], run_dir: str):
         # Since user asked for "logging system" I should probably use it, but utils is imported by main
         # Let's assume caller handles main logging or we import logging here
         pass
+
+def load_and_combine_csvs(data_path: str, config: Dict[str, Any], logger: Any) -> pd.DataFrame:
+    """
+    Loads all CSV files from a directory, combines them, deduplicates, and orders by date.
+    """
+    data_dir = data_path if os.path.isdir(data_path) else os.path.dirname(data_path)
+    if not os.path.exists(data_dir):
+        logger.error(f"Data directory not found: {data_dir}")
+        sys.exit(1)
+        
+    csv_files = [os.path.join(data_dir, f) for f in os.listdir(data_dir) if f.endswith('.csv')]
+    if not csv_files:
+        logger.error(f"No CSV files found in {data_dir}")
+        sys.exit(1)
+        
+    logger.info(f"Found {len(csv_files)} CSV file(s) in {data_dir}.")
+    dfs = []
+    for cf in csv_files:
+        try:
+             temp_df = pd.read_csv(cf, on_bad_lines='skip')
+             dfs.append(temp_df)
+        except Exception as e:
+             logger.warning(f"Could not read {cf}: {e}")
+             
+    if not dfs:
+        logger.error("No valid data could be read from any CSV files.")
+        sys.exit(1)
+        
+    df = pd.concat(dfs, ignore_index=True)
+    df = df.drop_duplicates()
+    
+    date_col = config.get("columns", {}).get("date", "Activity Date")
+    if date_col in df.columns:
+        temp_dates = pd.to_datetime(df[date_col], errors='coerce')
+        # Sort so oldest is first, or newest is first depending on standard. 
+        # For typical processing, chronological is good.
+        df = df.loc[temp_dates.sort_values(na_position='last').index].reset_index(drop=True)
+        
+    logger.info(f"Loaded {len(df)} unique rows from data files.")
+    return df
