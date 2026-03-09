@@ -86,3 +86,5 @@ if __name__ == "__main__":
         sys.exit(1)
         
     main(data_path, config_path, args.current_value, logger, run_dir)
+    # Add sample script to run with default args
+    # python main.py --data data/data.csv --config data/config.yaml --current-value 100000

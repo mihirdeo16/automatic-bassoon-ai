@@ -86,6 +86,12 @@ def save_run_dataframes(data_summary: Dict[str, Any], run_dir: str):
                 path = os.path.join(run_dir, filename)
                 
                 df.to_csv(path, index=False)
+                
+        # Save XIRR Data
+        if "XIRR_DF" in data_summary and data_summary["XIRR_DF"] is not None:
+            xirr_df = data_summary["XIRR_DF"]
+            xirr_path = os.path.join(run_dir, "xirr_data.csv")
+            xirr_df.to_csv(xirr_path, index=False)
     except Exception as e:
         # Minimal logging via print if logger isn't strictly available here, or pass logging up
         # Since user asked for "logging system" I should probably use it, but utils is imported by main

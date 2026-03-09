@@ -190,6 +190,7 @@ def process_data(df: pd.DataFrame, config: Dict[str, Any], current_value: Option
         
     # Calculate XIRR if current value is provided
     xirr_val = None
+    xirr_df = None
     if current_value is not None:
         try:
             # Filter Deposits (RTP, ACH)
@@ -210,8 +211,17 @@ def process_data(df: pd.DataFrame, config: Dict[str, Any], current_value: Option
             # Add Current Value
             dates.append(datetime.now())
             cashflows.append(float(current_value))
-            
             xirr_val = calculate_xirr(cashflows, dates)
+            
+            # Create DataFrame for export
+            xirr_df = pd.DataFrame({
+                'Date': dates,
+                'Amount': cashflows
+            })
+            if not xirr_df.empty:
+                xirr_df['Date'] = pd.to_datetime(xirr_df['Date'])
+                xirr_df = xirr_df.sort_values(by='Date')
+                xirr_df['Date'] = xirr_df['Date'].dt.strftime('%Y-%m-%d')
         except Exception as e:
             print(f"Error calculating XIRR: {e}")
             xirr_val = None
@@ -224,6 +234,7 @@ def process_data(df: pd.DataFrame, config: Dict[str, Any], current_value: Option
         "Yearly_Summary_DF": final_yearly_summary,
         "Investment_Breakdown_Yearly": inst_breakdown_dict,
         "Investment_Overview_DF": overview_df,
-        "XIRR": xirr_val
+        "XIRR": xirr_val,
+        "XIRR_DF": xirr_df
     }
 

@@ -65,10 +65,19 @@ python main.py
 uv run main.py --data my_transactions.csv
 ```
 
-**Calculate XIRR by providing current portfolio value:**
+**Calculate [XIRR](https://www.youtube.com/watch?v=2IqISNe9lks) by providing current portfolio value:**
 ```bash
 uv run main.py --current-value 18740.40
 ```
+
+## How to Get Data
+
+### Official Export (CSV)
+Robinhood provides a self-service tool on their web platform:
+1. Log in to [robinhood.com](https://robinhood.com).
+2. Navigate to **Account** > **Reports and statements**.
+3. Use the **"Customize your report"** feature to select your account and date range.
+4. Download the generated report as a **CSV**.
 
 ## Input Data Format
 
