@@ -35,7 +35,7 @@ def generate_report(data_summary: Dict[str, Any], output_dir: str = "output", ru
             col_map = {
                 "Year": "Period",
                 "total_amount": "Net Total ($)", 
-                "total_buy_amount": "Total Buy ($)", 
+                "total_buy_amount": "Total Purchase ($)", 
                 "total_dividends": "Dividends ($)", 
                 "total_lending": "Lending ($)", 
                 "total_invested": "Invested ($)", 
@@ -46,14 +46,14 @@ def generate_report(data_summary: Dict[str, Any], output_dir: str = "output", ru
             
             # Select and reorder columns (Net Total is hidden from table)
             # Enable 'Invested ($)' as requested and placed it first
-            columns_to_show = ["Period", "Invested ($)", "Total Buy ($)", "Dividends ($)", "Trades", "Unique Inst.", "Lending ($)"]
+            columns_to_show = ["Period", "Invested ($)", "Dividends ($)", "Total Purchase ($)", "Lending ($)", "Trades", "Unique Inst."]
             
             # Filter only cols that exist
             cols_to_use = [c for c in columns_to_show if c in yearly_df.columns]
             display_df = yearly_df[cols_to_use].copy()
 
             # Format numeric columns
-            money_cols = ["Invested ($)", "Total Buy ($)", "Dividends ($)", "Lending ($)"]
+            money_cols = ["Invested ($)", "Total Purchase ($)", "Dividends ($)", "Lending ($)"]
             for col in money_cols:
                 if col in display_df.columns:
                     display_df[col] = display_df[col].map("${:,.2f}".format)
@@ -66,14 +66,18 @@ def generate_report(data_summary: Dict[str, Any], output_dir: str = "output", ru
             if not overall_row.empty:
                 # Extract values (assuming they exist)
                 net_liquidity = overall_row["Net Total ($)"].iloc[0] if "Net Total ($)" in overall_row.columns else 0.0
-                total_buy = overall_row["Total Buy ($)"].iloc[0] if "Total Buy ($)" in overall_row.columns else 0.0
+                total_buy = overall_row["Total Purchase ($)"].iloc[0] if "Total Purchase ($)" in overall_row.columns else 0.0
                 total_div = overall_row["Dividends ($)"].iloc[0] if "Dividends ($)" in overall_row.columns else 0.0
+                total_invested = overall_row["Invested ($)"].iloc[0] if "Invested ($)" in overall_row.columns else 0.0
                 
                 f.write(f"**Net Liquidity (Overall):** ${net_liquidity:,.2f}\n\n")
                 
                 # New line: Total Value (Buy + Div)
                 total_value = total_buy + total_div
                 f.write(f"**Total Value (Buy + Div):** ${total_value:,.2f}\n\n")
+
+                invest_plus_div = total_invested + total_div
+                f.write(f"**Invested + Dividend:** ${invest_plus_div:,.2f}\n\n")
 
             # XIRR Display
             if "XIRR" in data_summary and data_summary["XIRR"] is not None:
@@ -84,7 +88,7 @@ def generate_report(data_summary: Dict[str, Any], output_dir: str = "output", ru
             f.write("**Metric Definitions:**\n")
             definitions = {
                 "Invested ($)": "Total funds deposited (RTP transactions).",
-                "Total Buy ($)": "Total capital spent on 'Buy' transactions.",
+                "Total Purchase ($)": "Total capital spent on 'Buy' transactions.",
                 "Dividends ($)": "Total dividend income received.",
                 "Trades": "Total count of non-lending transactions executed.",
                 "Unique Inst.": "Number of unique financial instruments (tickers).",
@@ -93,7 +97,12 @@ def generate_report(data_summary: Dict[str, Any], output_dir: str = "output", ru
             for metric, desc in definitions.items():
                 if metric in display_df.columns:
                     f.write(f"- **{metric}**: {desc}\n")
-            f.write("\n")
+            
+            f.write("\n*Note: All the dividend received has been reinvested. That is why a total purchase is different than invested.*\n\n")
+            
+            last_dt = data_summary.get("Last_Trade_Date")
+            if last_dt and last_dt != "N/A":
+                f.write(f"**Last Investment Trade Made On:** {last_dt}\n\n")
 
         # Investment Overview Section
         if "Investment_Overview_DF" in data_summary:

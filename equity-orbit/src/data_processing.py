@@ -230,11 +230,27 @@ def process_data(df: pd.DataFrame, config: Dict[str, Any], current_value: Option
     # Assuming inst_breakdown_dict is the dictionary of yearly breakdowns
     # Assuming overview_df is the investment overview dataframe
     
+    last_trade_date_str = "N/A"
+    type_col = cols_config.get("transaction_type", "Trans Code")
+    if type_col in df.columns and settle_date_col in df.columns:
+        trades_df = df[df[type_col] == 'Buy'].copy()
+        if not trades_df.empty:
+            trades_df['Parsed_Date'] = pd.to_datetime(trades_df[settle_date_col], errors='coerce')
+            max_dt = trades_df['Parsed_Date'].max()
+            if pd.notnull(max_dt):
+                day = max_dt.day
+                if 4 <= day <= 20 or 24 <= day <= 30:
+                    suffix = "th"
+                else:
+                    suffix = ["st", "nd", "rd"][day % 10 - 1]
+                last_trade_date_str = max_dt.strftime(f'{day}{suffix} of %B %Y')
+
     return {
         "Yearly_Summary_DF": final_yearly_summary,
         "Investment_Breakdown_Yearly": inst_breakdown_dict,
         "Investment_Overview_DF": overview_df,
         "XIRR": xirr_val,
-        "XIRR_DF": xirr_df
+        "XIRR_DF": xirr_df,
+        "Last_Trade_Date": last_trade_date_str
     }
 
